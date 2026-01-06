@@ -1,0 +1,31 @@
+name: DevSecOps Pipeline
+
+on: [push]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run Bandit (Python SAST)
+        run: |
+          pip install bandit
+          bandit -r api/ -f json -o bandit-report.json || true
+
+      - name: Run Safety (Dependency Scan)
+        run: |
+          pip install safety
+          safety check -r requirements.txt || true
+
+      - name: Build Docker Image
+        run: |
+          docker build -t my-app .
+
+      - name: Run Trivy (Container Scan)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'my-app' 
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
