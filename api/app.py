@@ -1,14 +1,8 @@
 from flask import Flask, request, jsonify
 import sqlite3
-import os
 import hashlib
-import logging
 
 app = Flask(__name__)
-
-API_KEY = os.getenv("API_KEY", "secure-default-key")
-
-logging.basicConfig(level=logging.INFO)
 
 @app.route("/auth", methods=["POST"])
 def auth():
@@ -18,8 +12,7 @@ def auth():
     
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
-    query = "SELECT * FROM users WHERE username=? AND password=?"
-    cursor.execute(query, (username, password))
+    cursor.execute("SELECT * FROM users WHERE username=? AND password=?", (username, password))
     
     user = cursor.fetchone()
     if user:
